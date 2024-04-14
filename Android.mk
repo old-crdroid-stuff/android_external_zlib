@@ -22,8 +22,6 @@ zlib_files := \
 	src/uncompr.c \
 	src/zutil.c
 
-zlib_cflags := -O3 -DUSE_MMAP -DZLIB_CONST -DUNALIGNED_OK -DZLIB_ARMv8
-
 LOCAL_MODULE := libz
 LOCAL_MODULE_TAGS := optional
 LOCAL_CFLAGS += -O3 -DUSE_MMAP
@@ -33,7 +31,11 @@ LOCAL_CFLAGS_arm64 += -mcpu=generic+crc
 LOCAL_LDFLAGS_arm := -Wl,--hash-style=both
 
 LOCAL_SRC_FILES := $(zlib_files)
-LOCAL_CXX_STL := none
+ifneq ($(TARGET_BUILD_APPS),)
+  LOCAL_SDK_VERSION := 9
+else
+  LOCAL_CXX_STL := none
+endif
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
 include $(BUILD_SHARED_LIBRARY)
 
@@ -45,7 +47,11 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_CFLAGS += -O3 -DUSE_MMAP
 LOCAL_CFLAGS_arm64 += -mcpu=generic+crc
 LOCAL_SRC_FILES := $(zlib_files)
-LOCAL_CXX_STL := none
+ifneq ($(TARGET_BUILD_APPS),)
+  LOCAL_SDK_VERSION := 9
+else
+  LOCAL_CXX_STL := none
+endif
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
 include $(BUILD_STATIC_LIBRARY)
 
@@ -53,8 +59,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := libz
 LOCAL_MODULE_TAGS := optional
-LOCAL_CFLAGS += $(zlib_cflags)
-LOCAL_CFLAGS_arm64 += -mcpu=generic+crc
+LOCAL_CFLAGS += -O3 -DUSE_MMAP
 LOCAL_SRC_FILES := $(zlib_files)
 LOCAL_MULTILIB := both
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
@@ -66,7 +71,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := libz-host
 LOCAL_MODULE_TAGS := optional
-LOCAL_CFLAGS += $(zlib_cflags)
+LOCAL_CFLAGS += -O3 -DUSE_MMAP
 LOCAL_SRC_FILES := $(zlib_files)
 LOCAL_MULTILIB := both
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
@@ -98,7 +103,3 @@ LOCAL_STATIC_LIBRARIES := libz
 LOCAL_CXX_STL := none
 
 include $(BUILD_HOST_EXECUTABLE)
-
-$(TARGET_OUT_COMMON_GEN)/zlib_fingerprint : $(wildcard $(LOCAL_PATH)/src/*.[ch])
-	printf '%s\n' $^ | LC_ALL=C sort | xargs cat | shasum -a 256 | \
-		awk '{printf $$1}' > $@
